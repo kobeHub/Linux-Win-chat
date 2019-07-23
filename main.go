@@ -22,7 +22,7 @@ type message struct {
 
 type file struct {
 	FileName string `json:"filename"`
-	Data     []byte `json:""`
+	Data     []byte `json:"data"`
 }
 
 // Setup TLS connection and listen
@@ -54,7 +54,7 @@ func listener(config *tls.Config, wg *sync.WaitGroup, alivech chan bool) {
 			}
 			if msg.Text != "" {
 				log.Printf("%s: %s", msg.UserName, msg.Text)
-				fmt.Println(">>")
+				fmt.Print(">>")
 			}
 		}
 	}
@@ -71,7 +71,7 @@ CONNECTION:
 			continue
 		}
 		log.Println("Connected to another peer!")
-		fmt.Println(">>")
+		fmt.Println()
 
 		for {
 			select {
@@ -94,7 +94,7 @@ func reader(msgch chan message, username string) {
 	var in = bufio.NewReader(os.Stdin)
 	var msg = message{UserName: username}
 	for {
-		fmt.Println(">>")
+		fmt.Print(">>")
 		if text, _ := in.ReadString('\n'); text != "\n" {
 			msg.Text = strings.TrimSpace(text)
 			msgch <- msg
@@ -110,7 +110,7 @@ func main() {
 	}
 	configSender := tls.Config{
 		Certificates: []tls.Certificate{certSender},
-		InsecureSkipVerify: false,
+		InsecureSkipVerify: true,
 	}
 
 	certListener, err := tls.LoadX509KeyPair("certs/server.pem", "certs/server.key")
@@ -119,7 +119,7 @@ func main() {
 	}
 	configListener := tls.Config{
 		Certificates: []tls.Certificate{certListener},
-		InsecureSkipVerify: false,
+		InsecureSkipVerify: true,
 	}
 
 	if len(os.Args) < 3 {
@@ -135,6 +135,7 @@ func main() {
 	alivech := make(chan bool)
 
 	fmt.Println("Welcome to talk free,", username, "\tRemote target:", remoteAddr)
+
 
 	go listener(&configListener, &wg, alivech)
 	go sender(remoteAddr, &configSender, msgch, alivech)
