@@ -97,18 +97,19 @@ func reader(msgch chan message, username string) {
 		fmt.Print(">>")
 
 		if text, _ := in.ReadString('\n'); text != "\n" {
-			if text == "\\" {
+			text = strings.TrimSpace(text)
+			if text == "l" {
 				var tmp string = ""
 				for {
-					t, _, _ := in.ReadLine()
-					if string(t) == "\\q" {
+					t, _ := in.ReadString('\n')
+					if strings.TrimSpace(t) == "\\q" {
 						break
 					}
 					tmp += string(t)
 				}
 				msg.Text = tmp
 			} else {
-				msg.Text = strings.TrimSpace(text)
+				msg.Text = text
 			}
 			msgch <- msg
 		} 
